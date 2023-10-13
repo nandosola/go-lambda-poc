@@ -15,7 +15,7 @@ Resources:
           DYNAMODB_TABLE: Birthdays
       Events:
         GetRequest:
-          Type: HttpApi
+          Type: Api
           Properties:
             Path: /hello/{username}
             Method: get
