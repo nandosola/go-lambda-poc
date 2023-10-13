@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Mock server for integration testing
+
+Resources:
+  Greeter:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: main
+      Runtime: provided.al2
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: Birthdays
+      Events:
+        GetRequest:
+          Type: HttpApi
+          Properties:
+            Path: /hello/{username}
+            Method: get
+            PayloadFormatVersion: "2.0"
+
