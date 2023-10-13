@@ -1,0 +1,29 @@
+{
+    "Birthdays": [
+        {
+            "PutRequest": {
+                "Item": {
+                    "Id": { "S": "2bd806c97f0e00af1a1fc3328fa763a9269723c8db8fac4f93af71db186d6e90"},
+                    "Dob": { "S": "1978-06-18" }
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "Id": { "S": "81b637d8fcd2c6da6359e6963113a1170de795e4b725b84d1e0b4cfd9ec58ce9"},
+                    "Dob": { "S": "2021-12-04" }
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "Id": { "S": "301b23f91f2d5f90315b0cff3d71cb57b36c77ca54db6ce49657d3ff66ff9013"},
+                    "Dob": { "S": "2019-04-04" }
+                }
+            }
+        }
+    ]
+}
+

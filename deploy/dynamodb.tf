@@ -3,11 +3,11 @@ module "dynamodb_table" {
   version = "~> 3.3"
 
   name      = random_pet.this.id
-  hash_key  = "id"
+  hash_key  = "Id"
 
   attributes = [
     {
-      name = "id"  # SHA256sum, just a uid, max 12 chars
+      name = "Id"
       type = "S"
     },
   ]

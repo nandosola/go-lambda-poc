@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion : '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Mock server for integration testing
+Description: Mock tmplate for local integration testing
 
 Resources:
   Greeter:
@@ -10,6 +10,8 @@ Resources:
       Runtime: provided.al2
       Environment:
         Variables:
+          REGION: ddblocal
+          AWSENV: AWS_SAM_LOCAL
           DYNAMODB_TABLE: Birthdays
       Events:
         GetRequest:
