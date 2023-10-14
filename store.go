@@ -63,14 +63,14 @@ func GetFromStore(bday *Birthday) error {
     Key: bday.GetKey(),
   })
   if err != nil {
-    return fmt.Errorf("GetItem: %s. Wrapped: %w", bday.Id, err)
+    return fmt.Errorf("DDBGetItem: %s. Wrapped: %w", bday.Id, err)
   }
   if result.Item == nil {
-    return fmt.Errorf("NotFound: %s", bday.Id)
+    return fmt.Errorf("DDBNotFound: %s", bday.Id)
   }
 
   if err = attributevalue.UnmarshalMap(result.Item, &bday); err != nil {
-    return fmt.Errorf("UnmarshalMap. Wrapped: %w", err)
+    return fmt.Errorf("DDBUnmarshalMap. Wrapped: %w", err)
   }
 
   return nil
