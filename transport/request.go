@@ -1,12 +1,15 @@
-package main
+package transport
 
 
 import (
   "context"
+  "fmt"
 
   "github.com/go-playground/validator/v10"
 )
 
+
+const userNameParam = "username"
 
 var validate *validator.Validate
 
@@ -18,16 +21,21 @@ type GetBirthdayRequest struct {
   Name  string `validate:"required,alpha,lowercase,min=2,max=12"`
 }
 
-func newReadRequest(ctx context.Context, name string) (*GetBirthdayRequest, error) {
-  req := GetBirthdayRequest{
+func NewReadRequest(ctx context.Context, req *Request) (*GetBirthdayRequest, error) {
+  name, ok := req.PathParameters[userNameParam]
+  if !ok {
+    return nil, fmt.Errorf("PathParamNotFound: '%s'", userNameParam)
+  }
+
+  br := GetBirthdayRequest{
     Name: name,
   }
 
-  if err := validate.Struct(&req); err != nil {
+  if err := validate.Struct(&br); err != nil {
     return nil, err
   }
 
-  return &req, nil
+  return &br, nil
 }
 
 

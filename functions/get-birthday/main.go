@@ -19,24 +19,18 @@ func init() {
 
 func processGet(ctx context.Context, req transport.Request) (*transport.Response, error) {
   //log.Printf("Received req %#v", req)
-  reqId := req.RequestContext.RequestID
 
-  name, ok := req.PathParameters["username"]
-  if !ok {
-    return transport.NotFoundError.AsResponse(reqId)
-  }
-
-  rr, err := newReadRequest(ctx, name)
+  rr, err := transport.NewReadRequest(ctx, &req)
   if err != nil {
-    return transport.BadRequestError(err).AsResponse(reqId)
+    return transport.ErrorResponse(err, &req)
   }
 
   res, err := service.Reader().GetBirthday(ctx, rr)
   if err != nil {
-    return transport.InternalError(err).AsResponse(reqId)
+    return transport.ErrorResponse(err, &req)
   }
 
-  return transport.SuccessResponse(res, reqId)
+  return transport.SuccessResponse(res, &req)
 }
 
 func main() {
