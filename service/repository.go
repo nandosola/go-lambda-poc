@@ -61,7 +61,6 @@ func InitializeRepo() error {
   return nil
 }
 
-
 func (brr bdayReadRepository) GetBirthday(ctx context.Context, user IUser) (*Birthday, error) {
   bday := newBirthday(user.Username())
   err := brr.store.GetFromStore(&bday)

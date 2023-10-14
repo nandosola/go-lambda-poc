@@ -1,4 +1,4 @@
-package main
+package transport
 
 import (
   "encoding/json"
@@ -7,7 +7,12 @@ import (
   "net/http"
   "strings"
 
-  "service"
+  "github.com/aws/aws-lambda-go/events"
+)
+
+type (
+  Request  events.APIGatewayV2HTTPRequest
+  Response events.APIGatewayV2HTTPResponse
 )
 
 const errorJsonTmpl = `{"message":"%s","requestId":"%s"}`
@@ -27,8 +32,8 @@ func (er ErrorResponse) Error() string {
   return fmt.Sprintf("status: %d, message: %s", er.Status, msg)
 }
 
-func (er ErrorResponse) asLambdaResponse(requestId string) (*LambdaResponse, error) {
-  res := &LambdaResponse{ StatusCode: er.Status }
+func (er ErrorResponse) AsResponse(requestId string) (*Response, error) {
+  res := &Response{ StatusCode: er.Status }
 
   if msg := er.logAndTranslate(); msg != "" {
     res.Body = fmt.Sprintf(errorJsonTmpl, msg, requestId)
@@ -62,7 +67,7 @@ func (er ErrorResponse) logAndTranslate() string {
   return ""
 }
 
-func internalError(err error) ErrorResponse {
+func InternalError(err error) ErrorResponse {
   status := http.StatusInternalServerError
   errMsg := err.Error()
   switch {
@@ -74,18 +79,18 @@ func internalError(err error) ErrorResponse {
 }
 
 var (
-  methodNotAllowedError = ErrorResponse{Status: http.StatusMethodNotAllowed}
-  notFoundError         = ErrorResponse{Status: http.StatusNotFound}
-  badRequestError       = func(err error) ErrorResponse { return ErrorResponse{Status: http.StatusBadRequest, Wrapped: err} }
+  MethodNotAllowedError = ErrorResponse{Status: http.StatusMethodNotAllowed}
+  NotFoundError         = ErrorResponse{Status: http.StatusNotFound}
+  BadRequestError       = func(err error) ErrorResponse { return ErrorResponse{Status: http.StatusBadRequest, Wrapped: err} }
 )
 
-func successResponse(res *service.Birthday, requestId string) (*LambdaResponse, error) {
+func SuccessResponse(res any, requestId string) (*Response, error) {
   json, err  := json.Marshal(res)
   if err != nil {
-    return internalError(err).asLambdaResponse(requestId)
+    return InternalError(err).AsResponse(requestId)
   }
 
-  return &LambdaResponse{
+  return &Response{
     StatusCode: http.StatusOK,
     Body:       string(json),
     Headers: map[string]string{

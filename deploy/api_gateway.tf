@@ -20,6 +20,12 @@ module "api_gateway" {
       payload_format_version = "2.0"
     }
 
+    "PUT /hello/{username}" = {
+      integration_type       = "AWS_PROXY"
+      lambda_arn             = module.lambda_put.lambda_function_arn
+      payload_format_version = "2.0"
+    }
+
     "$default" = {
       lambda_arn = module.lambda_get.lambda_function_arn
     }

@@ -2,12 +2,16 @@ module main
 
 go 1.19
 
-replace service => ../../service
+replace (
+	service => ../../service
+	transport => ../../transport
+)
 
 require (
 	github.com/aws/aws-lambda-go v1.41.0
 	github.com/go-playground/validator/v10 v10.15.5
 	service v0.0.0-00010101000000-000000000000
+	transport v0.0.0-00010101000000-000000000000
 )
 
 require (
