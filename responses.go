@@ -6,6 +6,8 @@ import (
   "log"
   "net/http"
   "strings"
+
+  "service"
 )
 
 const errorJsonTmpl = `{"message":"%s","requestId":"%s"}`
@@ -22,7 +24,7 @@ func (er ErrorResponse) Error() string {
     msg = er.Wrapped.Error()
   }
 
-  return fmt.Sprintf("status: %s, message: %s", er.Status, msg)
+  return fmt.Sprintf("status: %d, message: %s", er.Status, msg)
 }
 
 func (er ErrorResponse) asLambdaResponse(requestId string) (*LambdaResponse, error) {
@@ -77,7 +79,7 @@ var (
   badRequestError       = func(err error) ErrorResponse { return ErrorResponse{Status: http.StatusBadRequest, Wrapped: err} }
 )
 
-func successResponse(res *Birthday, requestId string) (*LambdaResponse, error) {
+func successResponse(res *service.Birthday, requestId string) (*LambdaResponse, error) {
   json, err  := json.Marshal(res)
   if err != nil {
     return internalError(err).asLambdaResponse(requestId)

@@ -1,9 +1,8 @@
-package main
+package service
 
 import (
   "context"
   "fmt"
-  "log"
   "os"
 
   "github.com/aws/aws-sdk-go-v2/aws"
@@ -13,12 +12,15 @@ import (
   "github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 )
 
-var (
-  tableName string
-  db        *dynamodb.Client
-)
 
-func CreateLocalClient() *dynamodb.Client {
+var ddbStore dynamoStore
+
+type dynamoStore struct {
+  client    *dynamodb.Client
+  tableName string
+}
+
+func createLocalClient() (*dynamodb.Client, error) {
   cfg, err := config.LoadDefaultConfig(context.TODO(),
               config.WithRegion("ddblocal"),
               config.WithEndpointResolver(aws.EndpointResolverFunc(
@@ -34,32 +36,37 @@ func CreateLocalClient() *dynamodb.Client {
                 },
               }))
   if err != nil {
-    panic(err)
+    return nil, fmt.Errorf("DDBLocal: %w", err)
   }
 
-  return dynamodb.NewFromConfig(cfg)
+  return dynamodb.NewFromConfig(cfg), nil
 }
 
-func init() {
+func ddbConnect() (*dynamoStore, error) {
+  var db *dynamodb.Client
+
   if "AWS_SAM_LOCAL" == os.Getenv("AWSENV") {
-    log.Println("using local config")
-    db = CreateLocalClient()
-  } else {
-    sdkConfig, err := config.LoadDefaultConfig(context.TODO())
+    var err error
+    db, err = createLocalClient()
     if err != nil {
-      log.Fatal(err)
+      return nil, err
+    }
+  } else {
+    conf, err := config.LoadDefaultConfig(context.TODO())
+    if err != nil {
+      return nil, fmt.Errorf("DDBConnect, AWSConfig: %w", err)
     }
 
-    db = dynamodb.NewFromConfig(sdkConfig)
+    db = dynamodb.NewFromConfig(conf)
   }
 
-  tableName = os.Getenv("DYNAMODB_TABLE")
-  log.Println("Table is", tableName)
+  ddbStore = dynamoStore{client: db, tableName: os.Getenv("DYNAMODB_TABLE")}
+  return &ddbStore, nil
 }
 
-func GetFromStore(bday *Birthday) error {
-  result, err := db.GetItem(context.TODO(), &dynamodb.GetItemInput{
-    TableName: aws.String(tableName),
+func (ds *dynamoStore) GetFromStore(bday *Birthday) error {
+  result, err := ds.client.GetItem(context.TODO(), &dynamodb.GetItemInput{
+    TableName: aws.String(ds.tableName),
     Key: bday.GetKey(),
   })
   if err != nil {

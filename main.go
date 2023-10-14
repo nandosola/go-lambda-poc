@@ -2,7 +2,9 @@ package main
 
 import (
   "context"
-  //"log"
+  "log"
+
+  "service"
 
   "github.com/aws/aws-lambda-go/events"
   "github.com/aws/aws-lambda-go/lambda"
@@ -14,6 +16,12 @@ type (
   LambdaResponse events.APIGatewayV2HTTPResponse
 )
 
+
+func init() {
+  if err := service.InitializeRepo(); err != nil {
+    log.Fatalf("the repository could not be initialized, %s", err.Error())
+  }
+}
 
 func processGet(ctx context.Context, req LambdaRequest) (*LambdaResponse, error) {
   //log.Printf("Received req %#v", req)
@@ -29,7 +37,7 @@ func processGet(ctx context.Context, req LambdaRequest) (*LambdaResponse, error)
     return badRequestError(err).asLambdaResponse(reqId)
   }
 
-  res, err := GetBirthday(ctx, rr)
+  res, err := service.Reader().GetBirthday(ctx, rr)
   if err != nil {
     return internalError(err).asLambdaResponse(reqId)
   }
