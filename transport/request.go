@@ -38,7 +38,6 @@ func NewReadRequest(ctx context.Context, req *Request) (*GetBirthdayRequest, err
   return &br, nil
 }
 
-
 func (gbr *GetBirthdayRequest) Username() string {
   return gbr.Name
 }

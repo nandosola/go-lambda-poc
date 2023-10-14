@@ -13,7 +13,7 @@ const (
   errorLogLevel = "ERROR"
 )
 
-// Common eerror router
+// Common error handler, this is a Go idiom
 func ErrorResponse(err error, req *Request) (*Response, error) {
   reqId := req.RequestContext.RequestID
   errMsg := err.Error()

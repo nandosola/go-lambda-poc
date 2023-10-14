@@ -12,7 +12,7 @@ var (
   onceRepo sync.Once
 )
 
-
+// Decouple request objects from transport layer through interfaces
 type IUser interface {
   Username() string
 }
@@ -21,6 +21,7 @@ type IBirthdayStore interface {
   GetFromStore(*Birthday) error
 }
 
+// Consume from GET
 type IBirthdayReader interface {
   GetBirthday(context.Context, IUser) (*Birthday, error)
 }

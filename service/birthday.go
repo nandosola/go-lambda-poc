@@ -30,14 +30,14 @@ func newBirthday(userName string) Birthday {
   }
 }
 
-func (b Birthday) greet() string {
+func (b Birthday) daysRemaining() uint {
   today := time.Now().UTC()
 
   ty, tm, td := today.Date()
   _, bm, bd := b.Dob.Date()
 
   if tm == bm && td == bd {
-    return fmt.Sprintf(bdayGreetingTmpl, b.name)
+    return 0
   }
 
   var nextBday time.Time
@@ -48,10 +48,19 @@ func (b Birthday) greet() string {
   }
   days := nextBday.Sub(today).Hours() / 24
 
-  return fmt.Sprintf(defaultGreetingTmpl, b.name, int(days))
+  return uint(days)
 }
 
-// serializers / deserializers / views
+func (b Birthday) greet() string {
+  days := b.daysRemaining()
+  if 0 == days {
+    return fmt.Sprintf(bdayGreetingTmpl, b.name)
+  }
+
+  return fmt.Sprintf(defaultGreetingTmpl, b.name, days)
+}
+
+// Define serializers/deserializers/views in the same struct. DTOs are not idiomatic.
 
 func (b Birthday) GetKey() map[string]types.AttributeValue {
   id, err := attributevalue.Marshal(b.Id)
