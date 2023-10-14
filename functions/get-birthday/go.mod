@@ -2,7 +2,7 @@ module main
 
 go 1.19
 
-replace service => ./service
+replace service => ../../service
 
 require (
 	github.com/aws/aws-lambda-go v1.41.0
