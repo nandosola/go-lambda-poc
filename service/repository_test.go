@@ -4,7 +4,6 @@ import (
   "bytes"
   "context"
   "errors"
-  "fmt"
   "io"
   "os"
   "testing"
@@ -37,7 +36,6 @@ func LoadFixture(t *testing.T, file string) {
     t.Fatal(err)
   }
   t.Cleanup(func() {
-    fmt.Println("cleanup")
     TestRWStore.Clean()
   })
 }
@@ -91,7 +89,7 @@ func TestGetBirthday(t *testing.T) {
       user :=  TestUser{name: tc.user}
       _, err := Reader().GetBirthday(context.TODO(), user)
       if err != nil && tc.found {
-        t.Errorf("%s was expected to pass. error: ", tc.user, err.Error())
+        t.Errorf("%s was expected to pass. error: %s", tc.user, err.Error())
       }
       if !tc.found && !errors.Is(err, ErrNotFound) {
         t.Errorf("%s: expected ErrNotFound", tc.user)

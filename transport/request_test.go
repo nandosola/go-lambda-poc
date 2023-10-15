@@ -58,6 +58,16 @@ func TestGetBirthdayRequest(t *testing.T) {
     },
     {
       name: "InvalidChars1",
+      user: "kk123456",
+      ok: false,
+    },
+    {
+      name: "InvalidChars2",
+      user: "alice.json",
+      ok: false,
+    },
+    {
+      name: "InvalidChars3",
       user: "Robert%60%29%3B%20DROP%20TABLE%20Students%3B--",
       ok: false,
     },

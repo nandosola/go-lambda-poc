@@ -1,9 +1,12 @@
 package service
 
 import (
+  "encoding/json"
   "fmt"
   "testing"
   "time"
+
+   "github.com/kinbiko/jsonassert"
 )
 
 const yyyymmdd = "2006-01-02"
@@ -30,7 +33,7 @@ func TestBirthdayDaysRemaining(t *testing.T) {
       user: "alpha",
       birthDate: "1978-06-18",
       expected: 0,
-      today: clock(20213, 6, 18),
+      today: clock(2021, 6, 18),
     },
     {
       name: "DateBeforeToday",
@@ -112,6 +115,56 @@ func TestBirthdayDaysRemaining(t *testing.T) {
       if dr:= bday.daysRemaining(); dr != tc.expected {
         t.Errorf("%s: expected %d, got %d", tc.user, tc.expected, dr)
       }
+    })
+  }
+}
+
+func TestBirthdayGreeting(t *testing.T) {
+  defer resetClock()
+  nowFun = func() time.Time {
+      return time.Date(2023, 10, 12, 13, 37, 42, 0, time.UTC)
+  }
+
+  ja := jsonassert.New(t)
+
+  cases := []struct {
+    name      string
+    user      string
+    birthDate string
+    expected  string
+  }{
+    {
+      name: "HappyBirthday",
+      user: "alpha",
+      birthDate: "1955-10-12",
+      expected: `{"message": "Hello, alpha! Happy birthday!"}`,
+    },
+    {
+      name: "DateBeforeToday",
+      user: "bravo",
+      birthDate: "1978-06-18",
+      expected: `{"message": "Hello, bravo! Your birthday is in 250 day(s)"}`,
+    },
+    {
+      name: "DateAfterToday",
+      user: "charly",
+      birthDate: "1997-11-28",
+      expected: `{"message": "Hello, charly! Your birthday is in 47 day(s)"}`,
+    },
+  }
+
+  for _, tc := range cases {
+    t.Run(tc.name, func(t *testing.T) {
+      parsed, _ := time.Parse(yyyymmdd, tc.birthDate)
+      bday := Birthday{name: tc.user, Dob: parsed}
+
+      jsonData, err := json.Marshal(bday)
+      if err != nil {
+        t.Fatal(err)
+      }
+
+      ja.Assertf(string(jsonData), tc.expected)
+
     })
   }
 }
