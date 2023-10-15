@@ -2,6 +2,8 @@ package service
 
 import (
   "context"
+  "errors"
+  "fmt"
   "log"
   "sync"
 )
@@ -10,6 +12,8 @@ import (
 var (
   readRepo IBirthdayReader
   onceRepo sync.Once
+
+  ErrNotFound = errors.New("username not found")
 )
 
 // Decouple request objects from transport layer through interfaces
@@ -18,7 +22,7 @@ type IUser interface {
 }
 
 type IBirthdayStore interface {
-  GetFromStore(*Birthday) error
+  GetFromStore(*Birthday) (bool, error)
 }
 
 // Consume from GET
@@ -63,8 +67,12 @@ func InitializeRepo() error {
 }
 
 func (brr bdayReadRepository) GetBirthday(ctx context.Context, user IUser) (*Birthday, error) {
-  bday := newBirthday(user.Username())
-  err := brr.store.GetFromStore(&bday)
+  u := user.Username()
+  bday := newBirthday(u)
+  ok, err := brr.store.GetFromStore(&bday)
+  if !ok {
+    return nil, fmt.Errorf("GetBirthday: %s, %w", u, ErrNotFound)
+  }
   return &bday, err
 }
 

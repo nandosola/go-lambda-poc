@@ -48,9 +48,13 @@ func (ts *testStore) Load(jsonFixture io.Reader) error {
 }
 
 
-func (ts *testStore) GetFromStore(bday *Birthday) error {
-  bday.Dob = TestRWStore.birthdays[bday.Id]
-  return nil
+func (ts *testStore) GetFromStore(bday *Birthday) (bool, error) {
+  v, ok := TestRWStore.birthdays[bday.Id]
+  if ok {
+    bday.Dob = v
+    return true, nil
+  }
+  return false, nil
 }
 
 func (ts *testStore) Clean(){

@@ -1,9 +1,12 @@
 package transport
 
 import (
+  "errors"
   "log"
   "net/http"
   "strings"
+
+  "service"
 )
 
 
@@ -23,7 +26,7 @@ func ErrorResponse(err error, req *Request) (*Response, error) {
   level := errorLogLevel
 
   switch {
-  case strings.HasPrefix(errMsg, "DDBNotFound"):
+    case errors.Is(err, service.ErrNotFound):
     userMsg = "username not found"
     status  = http.StatusNotFound
     level   = infoLogLevel

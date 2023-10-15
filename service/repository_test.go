@@ -3,10 +3,12 @@ package service
 import (
   "bytes"
   "context"
+  "errors"
   "fmt"
   "io"
   "os"
   "testing"
+  "time"
 )
 
 func TestMain(m *testing.M) {
@@ -35,6 +37,7 @@ func LoadFixture(t *testing.T, file string) {
     t.Fatal(err)
   }
   t.Cleanup(func() {
+    fmt.Println("cleanup")
     TestRWStore.Clean()
   })
 }
@@ -48,13 +51,52 @@ func (tu TestUser) Username() string {
 }
 
 func TestGetBirthday(t *testing.T) {
-  LoadFixture(t, "../testdata/fixtures.json")
-  alice :=  TestUser{name:"alice"}
-  res, err := Reader().GetBirthday(context.TODO(), alice)
-  if err != nil {
-    t.Fatal(err)
+  defer resetClock()
+  nowFun = func() time.Time {
+      return time.Date(2022, 6, 18, 13, 37, 42, 0, time.UTC)
   }
 
-  fmt.Printf("%+v\n", res)
+  // shared fixture
+  LoadFixture(t, "../testdata/fixtures.json")
 
+  cases := []struct {
+    name   string
+    user   string
+    found  bool
+  }{
+    {
+      name: "BdayToday",
+      user: "alice",
+      found: true,
+    },
+    {
+      name: "BdayThisYear",
+      user: "bob",
+      found: true,
+    },
+    {
+      name: "BdayNextYear",
+      user: "charly",
+      found: true,
+    },
+    {
+      name: "NotFound",
+      user: "bogus",
+      found: false,
+    },
+  }
+
+  for _, tc := range cases {
+    t.Run(tc.name, func(t *testing.T) {
+      user :=  TestUser{name: tc.user}
+      _, err := Reader().GetBirthday(context.TODO(), user)
+      if err != nil && tc.found {
+        t.Fatal(err)
+      }
+      if !tc.found && !errors.Is(err, ErrNotFound) {
+        t.Errorf("%s: expected ErrNotFound", tc.user)
+      }
+    })
+  }
 }
+

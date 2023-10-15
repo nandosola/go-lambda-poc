@@ -64,22 +64,22 @@ func ddbConnect() (*dynamoStore, error) {
   return &ddbStore, nil
 }
 
-func (ds *dynamoStore) GetFromStore(bday *Birthday) error {
+func (ds *dynamoStore) GetFromStore(bday *Birthday) (bool, error) {
   result, err := ds.client.GetItem(context.TODO(), &dynamodb.GetItemInput{
     TableName: aws.String(ds.tableName),
     Key: bday.GetKey(),
   })
   if err != nil {
-    return fmt.Errorf("DDBGetItem: %s. Wrapped: %w", bday.Id, err)
+    return false, fmt.Errorf("DDBGetItem: %s. Wrapped: %w", bday.Id, err)
   }
   if result.Item == nil {
-    return fmt.Errorf("DDBNotFound: %s", bday.Id)
+    return false, nil
   }
 
   if err = attributevalue.UnmarshalMap(result.Item, &bday); err != nil {
-    return fmt.Errorf("DDBUnmarshalMap. Wrapped: %w", err)
+    return false, fmt.Errorf("DDBUnmarshalMap. Wrapped: %w", err)
   }
 
-  return nil
+  return true, nil
 }
 

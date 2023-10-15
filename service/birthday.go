@@ -16,6 +16,21 @@ const (
   bdayGreetingTmpl    = "Hello, %s! Happy birthday!"
 )
 
+// package-level clock impl
+type timeNowFunT func() time.Time
+
+var nowFun timeNowFunT
+
+func init() {
+  resetClock()
+}
+
+func resetClock() {
+  nowFun = func() time.Time {
+    return time.Now()
+  }
+}
+
 type Birthday struct {
   Id        string    `dynamodbav:"Id"   json:"-"`
   Dob       time.Time `dynamodbav:"Dob"  json:"-"`
@@ -31,24 +46,21 @@ func newBirthday(userName string) Birthday {
 }
 
 func (b Birthday) daysRemaining() uint {
-  today := time.Now().UTC()
+  now := nowFun().UTC()
+  today := now.YearDay()
+  bday := b.Dob.YearDay()
 
-  ty, tm, td := today.Date()
+  if today <= bday {
+    return uint(bday-today)
+  }
+
+  // bday is next year
+  ty, _, _ := now.Date()
   _, bm, bd := b.Dob.Date()
+  end := time.Date(ty, 12, 31, 0, 0, 0, 0, time.UTC).YearDay()  // == 366 on leap years
+  next := time.Date(ty+1, bm, bd, 0, 0, 0, 0, time.UTC).YearDay()
 
-  if tm == bm && td == bd {
-    return 0
-  }
-
-  var nextBday time.Time
-  if tm > bm || (tm == bm && td > bd) {
-    nextBday = time.Date(ty+1, time.Month(bm), bd, 0, 0, 0, 0, time.UTC)
-  } else {
-    nextBday = time.Date(ty, time.Month(bm), bd, 0, 0, 0, 0, time.UTC)
-  }
-  days := nextBday.Sub(today).Hours() / 24
-
-  return uint(days)
+  return uint(end-today+next)
 }
 
 func (b Birthday) greet() string {
