@@ -2,8 +2,9 @@ name: Build and Test
 on: [pull_request]
 jobs:
   build:
-    name: "Build and Test"
+    name: Build and Test
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v3
 
@@ -17,4 +18,28 @@ jobs:
 
     - name: Unit tests
       run: make test
+
+  terraform:
+    name: Check Terraform
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: deploy
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: hashicorp/setup-terraform@v2
+
+    - name: Terraform fmt
+      id: fmt
+      run: terraform fmt -check
+      continue-on-error: true
+
+    - name: Terraform Init
+      id: init
+      run: "terraform init -backend=false"
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
 

@@ -30,6 +30,7 @@ zip: dist
 
 run: distclean dist
 	docker-compose --file $(DOCKER_COMPOSE_YML) up -d --remove-orphans dynamo
+	sleep 2
 	aws dynamodb create-table --no-cli-pager --cli-input-json file://$(TESTDATA_DIR)/create-ddb-table.json --endpoint-url http://localhost:8000
 	bash -c "trap 'docker-compose --file $(DOCKER_COMPOSE_YML) down' EXIT; sam local start-api --docker-network lambda-local"
 
