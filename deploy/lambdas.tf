@@ -15,6 +15,10 @@ module "lambda_get" {
     DYNAMODB_TABLE = "${module.dynamodb_table.dynamodb_table_id}"
   }
 
+  layers = [
+    "${local.lambda_insights_arn}"
+  ]
+
   attach_tracing_policy    = true
   attach_policy_statements = true
 
@@ -50,6 +54,10 @@ module "lambda_put" {
   environment_variables = {
     DYNAMODB_TABLE = "${module.dynamodb_table.dynamodb_table_id}"
   }
+
+  layers = [
+    "${local.lambda_insights_arn}"
+  ]
 
   attach_tracing_policy    = true
   attach_policy_statements = true
