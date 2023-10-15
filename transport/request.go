@@ -3,6 +3,7 @@ package transport
 
 import (
   "context"
+  "errors"
   "fmt"
   "strings"
 
@@ -17,6 +18,8 @@ const (
 
 var (
   validate *validator.Validate
+
+  ErrPathParamNotFound = errors.New("missing path param")
 )
 
 func init() {
@@ -30,7 +33,7 @@ type GetBirthdayRequest struct {
 func NewReadRequest(ctx context.Context, req *Request) (*GetBirthdayRequest, error) {
   name, ok := req.PathParameters[userNameParam]
   if !ok {
-    return nil, fmt.Errorf("PathParamNotFound: '%s'", userNameParam)
+    return nil, fmt.Errorf("NewReadRequest: %s, %w", userNameParam, ErrPathParamNotFound)
   }
 
   br := GetBirthdayRequest{

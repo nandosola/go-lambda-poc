@@ -7,6 +7,7 @@ replace service => ../service
 require (
 	github.com/aws/aws-lambda-go v1.41.0
 	github.com/go-playground/validator/v10 v10.15.5
+	github.com/kinbiko/jsonassert v1.1.1
 	service v0.0.0-00010101000000-000000000000
 )
 

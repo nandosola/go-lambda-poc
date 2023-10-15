@@ -32,14 +32,14 @@ func ErrorResponse(err error, req *Request) (*Response, error) {
     status  = http.StatusNotFound
     level   = infoLogLevel
 
+  case errors.Is(err, ErrPathParamNotFound):
+    userMsg = errors.Unwrap(err).Error()
+    status  = http.StatusServiceUnavailable
+
   case strings.HasPrefix(errMsg, "ValidationError.Read"):
     userMsg = fmt.Sprintf("username must be %s chars", readReqRestrictions)
     status  = http.StatusBadRequest
     level   = warnLogLevel
-
-  case strings.HasPrefix(errMsg, "PathParamNotFound"):
-    userMsg = "username path param is missing"
-    status  = http.StatusServiceUnavailable
 
   case strings.HasPrefix(errMsg, "DDB"):
     userMsg = "database error"

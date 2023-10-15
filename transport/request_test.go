@@ -2,6 +2,7 @@ package transport
 
 import (
   "context"
+  "errors"
   "strings"
   "testing"
 )
@@ -10,7 +11,7 @@ import (
 func TestGetBirthdayRequestEmptyPathParams(t *testing.T) {
   mockReq := &Request{ PathParameters: make(map[string]string)}
   _, err := NewReadRequest(context.TODO(), mockReq)
-  if !strings.HasPrefix(err.Error(), "PathParamNotFound") {
+  if !errors.Is(err, ErrPathParamNotFound) {
     t.Error("expected PathParamNotFound")
   }
 }
