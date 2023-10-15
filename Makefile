@@ -3,7 +3,7 @@ GOBUILD=$(GOTIDY) && go build -v
 GOLIST=go list -m -json all
 GOTEST=go test -v
 
-.PHONY: build test list-deps
+.PHONY: build test list-deps deploy
 
 build:
 	cd service && $(GOBUILD)
@@ -20,4 +20,9 @@ list-deps: # useful for IDEs
 test:
 	cd service && $(GOTEST)
 	cd transport && $(GOTEST)
+
+deploy:
+	cd functions/get-birthday &&  $(MAKE) zip
+	cd functions/put-birthday && $(MAKE) zip
+	cd deploy && terraform plan -out myplan && terraform apply "myplan"
 
