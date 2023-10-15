@@ -1,3 +1,4 @@
 main
 bootstrap
 dist/*.zip
+*.bin

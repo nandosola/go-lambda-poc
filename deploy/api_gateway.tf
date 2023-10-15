@@ -26,9 +26,9 @@ module "api_gateway" {
       payload_format_version = "2.0"
     }
 
-    "$default" = {
-      lambda_arn = module.lambda_get.lambda_function_arn
-    }
+    //"$default" = {
+    //  lambda_arn = module.lambda_get.lambda_function_arn
+    //}
   }
 }
 
