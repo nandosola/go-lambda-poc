@@ -91,7 +91,7 @@ func TestGetBirthday(t *testing.T) {
       user :=  TestUser{name: tc.user}
       _, err := Reader().GetBirthday(context.TODO(), user)
       if err != nil && tc.found {
-        t.Fatal(err)
+        t.Errorf("%s was expected to pass. error: ", tc.user, err.Error())
       }
       if !tc.found && !errors.Is(err, ErrNotFound) {
         t.Errorf("%s: expected ErrNotFound", tc.user)

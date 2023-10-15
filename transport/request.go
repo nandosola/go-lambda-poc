@@ -4,21 +4,27 @@ package transport
 import (
   "context"
   "fmt"
+  "strings"
 
   "github.com/go-playground/validator/v10"
 )
 
 
-const userNameParam = "username"
+const (
+  userNameParam       = "username"
+  readReqRestrictions = "alphanumeric, min=2, max=12"
+)
 
-var validate *validator.Validate
+var (
+  validate *validator.Validate
+)
 
 func init() {
   validate = validator.New(validator.WithRequiredStructEnabled())
 }
 
 type GetBirthdayRequest struct {
-  Name  string `validate:"required,alpha,lowercase,min=2,max=12"`
+  Name  string `validate:"required,alpha,min=2,max=12"`  // tags must be literals
 }
 
 func NewReadRequest(ctx context.Context, req *Request) (*GetBirthdayRequest, error) {
@@ -28,11 +34,11 @@ func NewReadRequest(ctx context.Context, req *Request) (*GetBirthdayRequest, err
   }
 
   br := GetBirthdayRequest{
-    Name: name,
+    Name: strings.ToLower(name),
   }
 
   if err := validate.Struct(&br); err != nil {
-    return nil, err
+    return nil, fmt.Errorf("ValidationError.Read: %w", err)
   }
 
   return &br, nil

@@ -2,6 +2,7 @@ package transport
 
 import (
   "errors"
+  "fmt"
   "log"
   "net/http"
   "strings"
@@ -27,12 +28,12 @@ func ErrorResponse(err error, req *Request) (*Response, error) {
 
   switch {
     case errors.Is(err, service.ErrNotFound):
-    userMsg = "username not found"
+    userMsg = errors.Unwrap(err).Error()
     status  = http.StatusNotFound
     level   = infoLogLevel
 
-  case strings.Contains(errMsg, "Field validation for 'Name'"):
-    userMsg = "username must be alphanumeric, min=2, max=12 chars"
+  case strings.HasPrefix(errMsg, "ValidationError.Read"):
+    userMsg = fmt.Sprintf("username must be %s chars", readReqRestrictions)
     status  = http.StatusBadRequest
     level   = warnLogLevel
 
