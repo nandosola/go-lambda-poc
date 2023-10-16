@@ -2,6 +2,11 @@ locals {
   domain_name         = "playground-4fd1.net"
   subdomain           = "api-684b"
   lambda_zip_path     = "../dist"
+
+  // ----
+  // Please keep layer version updated:
+  // https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights-extension-versionsx86-64.html
+  //
   lambda_insights_arn = "arn:aws:lambda:eu-west-1:580247275435:layer:LambdaInsightsExtension:38"
 }
 

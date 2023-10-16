@@ -54,7 +54,6 @@ func (ts *testStore) Load(jsonFixture io.Reader) error {
   return nil
 }
 
-
 func (ts *testStore) GetFromStore(bday *Birthday) (bool, error) {
   v, ok := TestRWStore.birthdays[bday.Id]
   if ok {
@@ -70,5 +69,9 @@ func (ds *testStore) AddToStore(bday *Birthday) error {
 }
 
 func (ts *testStore) Clean(){
+  m := TestRWStore.birthdays
+  for k := range m {
+    delete(m, k)
+  }
 }
 

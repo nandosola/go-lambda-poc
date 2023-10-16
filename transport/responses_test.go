@@ -39,3 +39,22 @@ func TestSuccessResponse(t *testing.T) {
   ja.Assertf(string(res.Body), expected.body)
 }
 
+func TestNoContentResponse(t *testing.T) {
+  expected := mockedResponse{
+    cType: "application/json",
+    status: 204,
+  }
+
+  res, _ := NoContent()
+  if len(res.Body) > 0  {
+    t.Error("non-empty body")
+  }
+  if res.StatusCode != expected.status {
+    t.Errorf("expected status=%d, got %d", expected.status, res.StatusCode)
+  }
+  if v, ok := res.Headers["Content-Type"]; !ok || v != expected.cType {
+    t.Errorf("expected content-type=%s, got '%s'", expected.cType, v)
+  }
+}
+
+

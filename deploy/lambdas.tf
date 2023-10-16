@@ -19,9 +19,12 @@ module "lambda_get" {
     "${local.lambda_insights_arn}"
   ]
 
-  attach_tracing_policy    = true
-  attach_policy_statements = true
+  attach_policy = true
+  policy        = "arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy"
 
+  attach_tracing_policy    = true
+
+  attach_policy_statements = true
   policy_statements = {
     dynamodb_read = {
       effect    = "Allow",
@@ -59,9 +62,12 @@ module "lambda_put" {
     "${local.lambda_insights_arn}"
   ]
 
-  attach_tracing_policy    = true
-  attach_policy_statements = true
+  attach_policy = true
+  policy        = "arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy"
 
+  attach_tracing_policy    = true
+
+  attach_policy_statements = true
   policy_statements = {
     dynamodb_read = {
       effect    = "Allow",
