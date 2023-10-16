@@ -1,5 +1,16 @@
 ## hello-revolut
 
+### Prerequisites
+- GNU/Linux or MacOS X with Bash and Make tools installed.
+- A Docker environment with docker-compose.
+- An AWS free-tier account. Please save admin credentials to `~/.aws/credentials` under `[playground_iac]` profile.
+- [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) to manage local environment for serverless goodness.
+- [Terraform 1.6.0+](https://developer.hashicorp.com/terraform/downloads) to manage deployments
+- [Go 1.19](https://go.dev/dl/) distribution for your platform. It's somewhat old, but it's the one I develop other projects with. No surprises.
+- [Vegeta HTTP Attack tool](https://github.com/tsenart/vegeta)
+
+### Rationale
 This is my proposed DevOps project for a simple birthday greeter REST app:
 
 ```
@@ -30,23 +41,31 @@ The solution is fully deployable to AWS. To keep things simple and secure, I dec
 - Emit metric and logs for each function and the API gateway.
 - NoOps is good DevOps.
 
+I've chosen DynamoDB as the go-to database for AWS Lambdas. However, there are some quirks:
+- There's a single primary key (aka hash key) on Id. DynamoDB hash keys should be optimized so they are distributed randomly across the ring nodes. This is the reason why I've chosen to SHA-256 the `{username}` attribute and use this random-ish string as our `BirthdayTable` PK.
+
 ### System diagram
 ![Diagram](system-diagram.png)
 
 ### serverless.tf
 As for the practical aspects, I've chosen [serverless.tf](https://serverless.tf/) to manage my lambdas:
-- 100% Terraform-friendly, unlike other alternatives that impose a programming framework for apps [Chalice](https://aws.github.io/chalice/) or compete with AWS (([Serverless](https://www.serverless.com/)).
-  - [Lambda](https://registry.terraform.io/modules/terraform-aws-modules/lambda/aws)
-  - [API Gateway](https://registry.terraform.io/modules/terraform-aws-modules/apigateway-v2)
-  - [DynamoDB](https://registry.terraform.io/modules/terraform-aws-modules/dynamodb-table)
-  - [Interesting examples](https://github.com/antonbabenko/serverless.tf-playground/tree/master)
-- Well-supported in AWS' own [Serverless Application Model](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) (SAM), although there are still some caveats. AWS is working on achieving Terraform-SAM compatibility:
+- 100% Terraform-friendly, unlike other alternatives that impose a programming framework for apps [Chalice](https://aws.github.io/chalice/) or compete with AWS ([Serverless](https://www.serverless.com/)).
+  - [Lambda](https://registry.terraform.io/modules/terraform-aws-modules/lambda/aws) module and examples.
+  - [API Gateway](https://registry.terraform.io/modules/terraform-aws-modules/apigateway-v2) module and examples.
+  - [DynamoDB](https://registry.terraform.io/modules/terraform-aws-modules/dynamodb-table) module and examples.
+  - [More Interesting resources](https://github.com/antonbabenko/serverless.tf-playground/tree/master) module and examples.
+- Well-supported in AWS' own [Serverless Application Model](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) (SAM), although there are still some caveats (See "Tradeoffs" section below). AWS is working on achieving Terraform-SAM compatibility:
   - [With vanilla Terraform](https://aws.amazon.com/blogs/compute/better-together-aws-sam-cli-and-hashicorp-terraform/)
   - [With serverless.tf](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-samcli-serverlesstf.html)
   - [This presentation](https://www.youtube.com/watch?v=rPnSDrsipRs) from AWS Community Day Nordics 2023 got my attention.
   - [aws-sam-terraform-examples](https://github.com/aws-samples/aws-sam-terraform-examples).
 
-### Go
+### Deployment (Terraform)
+All the infra is stored under the `deploy/` dir. New lambdas can be easily added just by editing `lambdas.tf` and `api_gateway.tf`. Please mind that the code lives outside Terraform. Each lambda is mapped to a ZIP file under `dist/`. For a complete deployment, just type `make deploy`.
+
+**NB** Atm each time `make deploy` is invoked, all lambdas are redeployed. This is because the ZIP chacksums are different across each run. It's pretty easy to fix: eg add a condition in deploy only if the github commit has changed. See: [building-and-packaging](https://registry.terraform.io/modules/terraform-aws-modules/lambda/aws/latest#a-namebuild-packagea-how-does-building-and-packaging-work) at serverless.tf docs.
+
+### Development (Go)
 Golang is my favorite language atm. It's very expressive, easy to learn and productive. Why not create a way to develop lambdas in Go and then be able to deploy them? Well, here it is:
 ```
 .
@@ -77,14 +96,15 @@ Each function has a Makefile with the following goals:
 - **build** fast-builds the project, with instant feedback.
 - **dist** generates cross-compiled binary (`bootstrap`) for containerized lambda testing
 - **run** spins up a local lambda server with a worker pointing to the `bootstrap` binary
-- **zip** generates dist package. It's called by the top-level Makefile to deploy everything. It can also be used before deploying manually with Terraform
+- **zip** generates package in `dist/` dir. It's called by the top-level Makefile to deploy everything. It can also be used before deploying manually with Terraform
 
 #### Unit tests
 The easiest way to run them all is via the top-level Makefile: `make test`.
+
 **NB** I don't recommend testing the `main.go` files for non CLI apps. It's just a collection of simple calls with no associated logic.
 
 #### Benchmarks
-For completeness sake, I've added a simple benchmark for the most "algorithmic" path of the app: getting days until birthday. To run it kust `cd service; go test -bench.`
+For completeness sake, I've added a simple benchmark for the most "algorithmic" path of the app: getting days until birthday. To run it kust `cd service; go test -bench=.`
 
 #### HTTP Integration testing
 There's a `docker-compose.yaml` file that wires up a `amazon/dynamodb-local` to be accessed eg via curl:
@@ -163,9 +183,9 @@ $ sam local invoke Greeter -e testdata/events-get.json`
 serverless.tf is a pretty active project. Some of its features keep up a faster pace than SAM does. This results in `sam local invoke --hook-name terraform module.my_function.…` not working with serverless.tf's [apigateway-v2.integrations](https://registry.terraform.io/modules/terraform-aws-modules/apigateway-v2/aws/latest#input_integrations). For this reason, I decided to use SAM only for local testing, via a dummy `template.yaml`.
 
 #### zero-downtime deploys
-_For most cases_. AWS lambdas have zero-downtime deploys. Of course, this depends on usage characteristics of the system. Having said this, handling these kind of scenarios outgrows AWS free-tier capabilities (eg. [provisioned concurrency](https://aws.amazon.com/ru/blogs/compute/new-for-aws-lambda-predictable-start-up-times-with-provisioned-concurrency/)). To prevent additional costs, rolling deployments can be also achieved via AWS CodeDeploy with additional benefits (ie blue/green, canary, …). TBH I didn't have enough time to explore this alternative.  Additionally, IMO, before tackling this deployment/pipeline complexity, we could arguably consider decreasing the function footprint. Eg switching from x86 lambda workers to ARM ones.
+_For most cases_. AWS lambdas have zero-downtime deploys. Of course, this depends on usage characteristics of the system. Having said this, handling these kind of scenarios outgrows AWS free-tier capabilities (eg. [provisioned concurrency](https://aws.amazon.com/ru/blogs/compute/new-for-aws-lambda-predictable-start-up-times-with-provisioned-concurrency/)). To prevent additional costs, rolling deployments can be also achieved via AWS CodeDeploy with additional benefits (ie blue/green, canary, …). TBH I didn't have enough time to explore this alternative.  Additionally, IMO, before tackling this deployment/pipeline complexity, we could arguably consider increase Dynamodb read/rite provisioned capacity. Or even switch from x86 lambda workers to ARM ones.
 
-In summary: I'll consider the _pico-downtime deploys_ just enough. I've coded a small utility to be run while lambda functions are being redeployed. The concurrency can be tuned. Atm it's set to 5 rps for 60 secs. Again, pretty reasonable within our free-tier constraints.
+**tl/dr;** I'll consider the _pico-downtime deploys_ as just good enough. I've coded a small utility to be run while lambda functions are being redeployed. The concurrency can be tuned. Atm it's set to 5 rps for 60 secs. Again, pretty reasonable within our free-tier constraints.
 
 ```
 $ cd scripts
@@ -182,15 +202,5 @@ Status Codes  [code:count]                      200:150  204:150
 Error Set:
 ```
 
-To make some sense out of any potential downtime during `terraform apply`, we should inspect lambda insights throttling, warmup and parallelism events in Cloudwatch. For example, we could be getting "false deploy downtime" for a high request volume.
-
-### Prerequisites
-- GNU/Linux or MacOS X with Bash and Make tools installed.
-- A Docker environment with docker-compose.
-- An AWS free-tier account. Please save admin credentials to `~/.aws/credentials` under `[playground_iac]` profile.
-- [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-- [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) to manage local environment for serverless goodness.
-- [Terraform 1.6.0+](https://developer.hashicorp.com/terraform/downloads) to manage deployments
-- [Go 1.19](https://go.dev/dl/) distribution for your platform. It's somewhat old, but it's the one I develop other projects with. No surprises.
-- [Vegeta HTTP Attack tool](https://github.com/tsenart/vegeta)
+To make some sense out of any potential downtime during `terraform apply`, we should inspect lambda insights throttling, warmup and parallelism events in Cloudwatch. For example, we could be getting "false deploy downtime" for a high request volume that is cut off by the lambda runtime.
 
