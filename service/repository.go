@@ -10,8 +10,9 @@ import (
 
 
 var (
-  readRepo IBirthdayReader
-  onceRepo sync.Once
+  readRepo  IBirthdayReader
+  writeRepo IBirthdayWriter
+  onceRepo  sync.Once
 
   ErrNotFound = errors.New("username not found")
 )
@@ -23,6 +24,7 @@ type IUser interface {
 
 type IBirthdayStore interface {
   GetFromStore(*Birthday) (bool, error)
+  AddToStore(*Birthday) error
 }
 
 // Consume from GET
@@ -30,7 +32,16 @@ type IBirthdayReader interface {
   GetBirthday(context.Context, IUser) (*Birthday, error)
 }
 
+// Consume from PUT
+type IBirthdayWriter interface {
+  AddBirthday(context.Context, *Birthday) error
+}
+
 type bdayReadRepository struct {
+  store IBirthdayStore
+}
+
+type bdayWriteRepository struct {
   store IBirthdayStore
 }
 
@@ -41,13 +52,22 @@ func Reader() IBirthdayReader {
   return readRepo
 }
 
+func Writer() IBirthdayWriter {
+  if writeRepo == nil {
+    log.Fatal("BirthdayWriter is not initialized")
+  }
+  return writeRepo
+}
+
 func InitializeTestRepo() error {
   onceRepo.Do(func(){
     readRepo = bdayReadRepository{
       store: testConnect(),
     }
+    writeRepo = bdayWriteRepository{
+      store: testConnect(),
+    }
   })
-
   return nil
 }
 
@@ -61,6 +81,9 @@ func InitializeRepo() error {
     readRepo = bdayReadRepository{
       store: st,
     }
+    writeRepo = bdayWriteRepository{
+      store: st,
+    }
   })
 
   return nil
@@ -68,11 +91,15 @@ func InitializeRepo() error {
 
 func (brr bdayReadRepository) GetBirthday(ctx context.Context, user IUser) (*Birthday, error) {
   u := user.Username()
-  bday := newBirthday(u)
-  ok, err := brr.store.GetFromStore(&bday)
+  bday := NewBirthday(u)
+  ok, err := brr.store.GetFromStore(bday)
   if !ok {
     return nil, fmt.Errorf("GetBirthday: %s, %w", u, ErrNotFound)
   }
-  return &bday, err
+  return bday, err
+}
+
+func (bwr bdayWriteRepository) AddBirthday(ctx context.Context, bday *Birthday) error {
+  return bwr.store.AddToStore(bday)
 }
 

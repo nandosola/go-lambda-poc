@@ -3,10 +3,15 @@ package service
 import (
   "encoding/json"
   "io"
+  "sync"
   "time"
 )
 
-var TestRWStore *testStore
+var (
+  TestRWStore   *testStore
+  onceTestStore sync.Once
+)
+
 
 type testStore struct {
   birthdays map[string]time.Time
@@ -28,7 +33,9 @@ type Fixture struct {
 }
 
 func testConnect() *testStore {
-  TestRWStore = &testStore{birthdays: make(map[string]time.Time)}
+  onceTestStore.Do(func(){
+    TestRWStore = &testStore{birthdays: make(map[string]time.Time)}
+  })
   return TestRWStore
 }
 
@@ -55,6 +62,11 @@ func (ts *testStore) GetFromStore(bday *Birthday) (bool, error) {
     return true, nil
   }
   return false, nil
+}
+
+func (ds *testStore) AddToStore(bday *Birthday) error {
+ TestRWStore.birthdays[bday.Id] = bday.Dob
+ return nil
 }
 
 func (ts *testStore) Clean(){

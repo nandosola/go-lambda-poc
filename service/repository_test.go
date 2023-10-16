@@ -49,8 +49,8 @@ func (tu TestUser) Username() string {
 }
 
 func TestGetBirthday(t *testing.T) {
-  defer resetClock()
-  nowFun = func() time.Time {
+  defer ResetClock()
+  NowFun = func() time.Time {
       return time.Date(2022, 6, 18, 13, 37, 42, 0, time.UTC)
   }
 

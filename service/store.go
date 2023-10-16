@@ -4,6 +4,7 @@ import (
   "context"
   "fmt"
   "os"
+  "sync"
 
   "github.com/aws/aws-sdk-go-v2/aws"
   "github.com/aws/aws-sdk-go-v2/config"
@@ -13,7 +14,10 @@ import (
 )
 
 
-var ddbStore dynamoStore
+var (
+  ddbStore     dynamoStore
+  onceDdbStore sync.Once
+)
 
 type dynamoStore struct {
   client    *dynamodb.Client
@@ -43,25 +47,26 @@ func createLocalClient() (*dynamodb.Client, error) {
 }
 
 func ddbConnect() (*dynamoStore, error) {
-  var db *dynamodb.Client
+  var err error
 
-  if "AWS_SAM_LOCAL" == os.Getenv("AWSENV") {
-    var err error
-    db, err = createLocalClient()
-    if err != nil {
-      return nil, err
+  onceDdbStore.Do(func(){
+    var db *dynamodb.Client
+
+    if "AWS_SAM_LOCAL" == os.Getenv("AWSENV") {
+      db, err = createLocalClient()
+    } else {
+      conf, errConf := config.LoadDefaultConfig(context.TODO())
+      if errConf != nil {
+        err = fmt.Errorf("DDBConnect, AWSConfig: %w", err)
+        return
+      }
+      db = dynamodb.NewFromConfig(conf)
     }
-  } else {
-    conf, err := config.LoadDefaultConfig(context.TODO())
-    if err != nil {
-      return nil, fmt.Errorf("DDBConnect, AWSConfig: %w", err)
-    }
 
-    db = dynamodb.NewFromConfig(conf)
-  }
+    ddbStore = dynamoStore{client: db, tableName: os.Getenv("DYNAMODB_TABLE")}
+  })
 
-  ddbStore = dynamoStore{client: db, tableName: os.Getenv("DYNAMODB_TABLE")}
-  return &ddbStore, nil
+  return &ddbStore, err
 }
 
 func (ds *dynamoStore) GetFromStore(bday *Birthday) (bool, error) {
@@ -76,10 +81,26 @@ func (ds *dynamoStore) GetFromStore(bday *Birthday) (bool, error) {
     return false, nil
   }
 
-  if err = attributevalue.UnmarshalMap(result.Item, &bday); err != nil {
+  if err = attributevalue.UnmarshalMap(result.Item, bday); err != nil {
     return false, fmt.Errorf("DDBUnmarshalMap. Wrapped: %w", err)
   }
 
   return true, nil
 }
 
+func (ds *dynamoStore) AddToStore(bday *Birthday) error {
+  item, err := attributevalue.MarshalMap(*bday)
+  if err != nil {
+    return fmt.Errorf("DDBMarshalMap: %s. Wrapped: %w", bday.Id, err)
+  }
+
+  _, err = ds.client.PutItem(context.TODO(), &dynamodb.PutItemInput{
+    TableName: aws.String(ds.tableName),
+    Item: item,
+  })
+  if err != nil {
+    return fmt.Errorf("DDBPutItem: %s. Wrapped: %w", bday.Id, err)
+  }
+
+  return nil
+}

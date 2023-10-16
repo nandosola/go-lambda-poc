@@ -54,6 +54,15 @@ func SuccessResponse(res any, req *Request) (*Response, error) {
   }, nil
 }
 
+func NoContent() (*Response, error) {
+  return &Response{
+    StatusCode: http.StatusNoContent,
+    Headers: map[string]string{
+      "Content-Type": "application/json",
+    },
+  }, nil
+}
+
 func asJson(obj any) (string, error) {
   jsonData, err  := json.Marshal(obj)
   if err != nil {

@@ -3,6 +3,7 @@ package service
 import (
   "crypto/sha256"
   "encoding/json"
+  "errors"
   "fmt"
   "time"
 
@@ -19,14 +20,17 @@ const (
 // package-level clock impl
 type timeNowFunT func() time.Time
 
-var nowFun timeNowFunT
+var (
+  NowFun timeNowFunT
+  ErrInvalidBirthday = errors.New("birth date must be before today")
+)
 
 func init() {
-  resetClock()
+  ResetClock()
 }
 
-func resetClock() {
-  nowFun = func() time.Time {
+func ResetClock() {
+  NowFun = func() time.Time {
     return time.Now()
   }
 }
@@ -37,16 +41,31 @@ type Birthday struct {
   name      string
 }
 
-func newBirthday(userName string) Birthday {
+func NewBirthday(userName string) *Birthday {
   hash := sha256.Sum256([]byte(userName))
-  return Birthday{
+  return &Birthday{
     Id: fmt.Sprintf("%x", hash[:]),
     name: userName,
   }
 }
 
-func (b Birthday) daysRemaining() uint {
-  now := nowFun().UTC()
+func (b *Birthday) WithDateOfBirth(dob time.Time) (*Birthday, error) {
+  now := NowFun().UTC()
+
+  ty, tm, td := now.Date()
+  by, bm, bd := dob.Date()
+
+
+  if (ty == by && tm == bm && td == bd) || !dob.Before(now) {
+   return nil, fmt.Errorf("Birthday: %w", ErrInvalidBirthday)
+  }
+
+  b.Dob = dob
+  return b, nil
+}
+
+func (b *Birthday) daysRemaining() uint {
+  now := NowFun().UTC()
   today := now.YearDay()
   bday := b.Dob.YearDay()
 
@@ -63,7 +82,7 @@ func (b Birthday) daysRemaining() uint {
   return uint(end-today+next)
 }
 
-func (b Birthday) greet() string {
+func (b *Birthday) greet() string {
   days := b.daysRemaining()
   if 0 == days {
     return fmt.Sprintf(bdayGreetingTmpl, b.name)
@@ -74,7 +93,7 @@ func (b Birthday) greet() string {
 
 // Define serializers/deserializers/views in the same struct. DTOs are not idiomatic.
 
-func (b Birthday) GetKey() map[string]types.AttributeValue {
+func (b *Birthday) GetKey() map[string]types.AttributeValue {
   id, err := attributevalue.Marshal(b.Id)
   if err != nil {
     panic(err)

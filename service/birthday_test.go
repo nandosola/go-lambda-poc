@@ -12,7 +12,7 @@ import (
 const yyyymmdd = "2006-01-02"
 
 func TestBirthdayDaysRemaining(t *testing.T) {
-  defer resetClock()
+  defer ResetClock()
   var clock  = func(y, m, d int) func() time.Time {
     return func() time.Time {
       return time.Date(y, time.Month(m), d, 13, 37, 42, 0, time.UTC)
@@ -109,7 +109,7 @@ func TestBirthdayDaysRemaining(t *testing.T) {
 
   for _, tc := range cases {
     t.Run(tc.name, func(t *testing.T) {
-      nowFun = tc.today
+      NowFun = tc.today
       parsed, _ := time.Parse(yyyymmdd, tc.birthDate)
       bday := Birthday{name: tc.user, Dob: parsed}
       if dr:= bday.daysRemaining(); dr != tc.expected {
@@ -120,8 +120,8 @@ func TestBirthdayDaysRemaining(t *testing.T) {
 }
 
 func TestBirthdayGreeting(t *testing.T) {
-  defer resetClock()
-  nowFun = func() time.Time {
+  defer ResetClock()
+  NowFun = func() time.Time {
       return time.Date(2023, 10, 12, 13, 37, 42, 0, time.UTC)
   }
 
@@ -170,8 +170,8 @@ func TestBirthdayGreeting(t *testing.T) {
 }
 
 func BenchmarkBirthdayDaysRemaining(b *testing.B) {
-  defer resetClock()
-  nowFun = func() time.Time {
+  defer ResetClock()
+  NowFun = func() time.Time {
       return time.Date(2023, 10, 12, 13, 37, 42, 0, time.UTC)
   }
 

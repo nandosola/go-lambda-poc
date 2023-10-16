@@ -28,7 +28,7 @@ zip: dist
 	mv $(DIST_BINARY_NAME) $(DIST_DIR)
 	cd $(DIST_DIR) && $(ZIPCMD) -j $(DIST_ZIP) $(DIST_BINARY_NAME) && rm $(DIST_BINARY_NAME)
 
-run: distclean dist
+run: dist
 	docker-compose --file $(DOCKER_COMPOSE_YML) up -d --remove-orphans dynamo
 	sleep 2
 	aws dynamodb create-table --no-cli-pager --cli-input-json file://$(TESTDATA_DIR)/create-ddb-table.json --endpoint-url http://localhost:8000
