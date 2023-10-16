@@ -5,7 +5,7 @@ mode="${1:-report}"
 report_file="report-$(date -u +"%Y%m%d%H%M%S").bin"
 
 echo "Starting status checks (${mode})… Please wait."
-/usr/bin/env vegeta attack -duration=60s -rate=4 -targets=targets.list -output="${report_file}"
+/usr/bin/env vegeta attack -duration=60s -rate=5 -targets=targets.list -output="${report_file}"
 
 
 case "${mode}" in

@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion : '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Mock tmplate for local integration testing
+Description: Mock template for local integration testing
 
 Resources:
   Greeter:
