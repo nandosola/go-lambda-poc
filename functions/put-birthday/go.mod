@@ -9,6 +9,7 @@ replace (
 
 require (
 	github.com/aws/aws-lambda-go v1.41.0
+	service v0.0.0-00010101000000-000000000000
 	transport v0.0.0-00010101000000-000000000000
 )
 
@@ -40,5 +41,4 @@ require (
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
-	service v0.0.0-00010101000000-000000000000 // indirect
 )

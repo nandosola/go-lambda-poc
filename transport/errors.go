@@ -32,12 +32,26 @@ func ErrorResponse(err error, req *Request) (*Response, error) {
     status  = http.StatusNotFound
     level   = infoLogLevel
 
+  case errors.Is(err, service.ErrInvalidBirthday):
+    userMsg = errors.Unwrap(err).Error()
+    status  = http.StatusBadRequest
+
   case errors.Is(err, ErrPathParamNotFound):
     userMsg = errors.Unwrap(err).Error()
     status  = http.StatusServiceUnavailable
 
   case strings.HasPrefix(errMsg, "ValidationError.Read"):
     userMsg = fmt.Sprintf("username must be %s chars", readReqRestrictions)
+    status  = http.StatusBadRequest
+    level   = warnLogLevel
+
+  case strings.Contains(errMsg, "ValidationError.Update"):
+    userMsg = fmt.Sprintf("date must be %s", updateReqRestrictions)
+    status  = http.StatusBadRequest
+    level   = warnLogLevel
+
+  case strings.HasPrefix(errMsg, "JSONUnmarshal"):
+    userMsg = "bad json input"
     status  = http.StatusBadRequest
     level   = warnLogLevel
 
