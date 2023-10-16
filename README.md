@@ -9,6 +9,7 @@
 - [Terraform 1.6.0+](https://developer.hashicorp.com/terraform/downloads) to manage deployments
 - [Go 1.19](https://go.dev/dl/) distribution for your platform. It's somewhat old, but it's the one I develop other projects with. No surprises.
 - [Vegeta HTTP Attack tool](https://github.com/tsenart/vegeta)
+- [awslogs tool](https://github.com/jorgebastida/awslogs)
 
 ### Rationale
 This is my proposed DevOps project for a simple birthday greeter REST app:
@@ -42,9 +43,11 @@ The solution is fully deployable to AWS. To keep things simple and secure, I dec
 - NoOps is good DevOps.
 
 I've chosen DynamoDB as the go-to database for AWS Lambdas. However, there are some quirks:
-- There's a single primary key (aka hash key) on Id. DynamoDB hash keys should be optimized so they are distributed randomly across the ring nodes. This is the reason why I've chosen to SHA-256 the `{username}` attribute and use this random-ish string as our `BirthdayTable` PK.
+- There's a single primary key (aka hash key) on Id. DynamoDB [hash keys should be optimized so they are distributed randomly across the ring nodes. This is the reason why I've chosen to SHA-256 the `{username}` attribute and use this random-ish string as our `BirthdayTable` PK.
+- According to [Lambda documentation](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html), Lambda environment is initialized once (cold start) and executed several times after that (warm execution). That means we can define and reuse database connections between invocations if we put the client outside our executive function.
 
 If needed, authorization (and other standard integrations) can be implemented in the API Gateway. No need to deal with access control in our lambdas.
+
 
 ### System diagram
 ![Diagram](system-diagram.png)
@@ -180,6 +183,9 @@ Commands you can use next
 $ curl -v -H "Content-Type:application/json" \
        -X PUT -d '{"dateOfBirth":"1989-01-09"}' \
        https://api-684b.playground-4fd1.net/hello/foo
+$
+$ aws dynamodb execute-statement --no-cli-pager --statement "SELECT * FROM Birthdays" --endpoint-url http://localhost:8000
+…
 ```
 
 #### Event integration testing
@@ -194,6 +200,18 @@ $ sam local invoke Greeter -e testdata/events-get.json`
 - [aws-sam-terraform-examples in Go](https://github.com/awsdocs//tree/main/gov2/lambda)
 - [aws-lambda-go-api-proxy](https://github.com/awslabs/aws-lambda-go-api-proxy)
 
+### Monitoring
+#### Logs
+All logs are forwarded to CloudWatch:
+```
+awslogs get /aws/lambda/xxx-lambda-get --aws-region eu-west-1 --profile playground_iac -w
+awslogs get /aws/lambda/xxx-lambda-put --aws-region eu-west-1 --profile playground_iac -w
+awslogs get /aws/apigw/xxx-http --aws-region eu-west-1 --profile playground_iac -w
+```
+
+#### Metrics
+- https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics.html
+- https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights.html
 
 ### Tradeoffs
 #### Local env based on SAM
@@ -218,6 +236,9 @@ Success       [ratio]                           100.00%
 Status Codes  [code:count]                      200:150  204:150
 Error Set:
 ```
+
+Please use `./check-deployment.sh plot` for a fancier output:
+![Plot](system-diagram.png)
 
 To make some sense out of any potential downtime during `terraform apply`, we should inspect lambda insights throttling, warmup and parallelism events in Cloudwatch. For example, we could be getting "false deploy downtime" for a high request volume that is cut off by the lambda runtime.
 
