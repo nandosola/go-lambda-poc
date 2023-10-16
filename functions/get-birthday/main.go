@@ -19,7 +19,7 @@ func init() {
 
 // This is a very simple handler. It contains no logic.
 func processGet(ctx context.Context, req transport.Request) (*transport.Response, error) {
-  //log.Printf("Received req %#v", req)
+  // log.Printf("Received req %#v", req)
 
   rr, err := transport.NewReadRequest(ctx, &req)
   if err != nil {

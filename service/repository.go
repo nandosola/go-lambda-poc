@@ -89,6 +89,13 @@ func InitializeRepo() error {
   return nil
 }
 
+//
+// About context handling:
+// lambda ctx is not of much use in our case. It should be handled by the repo though.
+//   - extract auth metadata (eg Cognito
+//   - handle long-running tasks and timeout deadlines
+//   see: https://docs.aws.amazon.com/lambda/latest/dg/golang-context.html
+
 func (brr bdayReadRepository) GetBirthday(ctx context.Context, user IUser) (*Birthday, error) {
   u := user.Username()
   bday := NewBirthday(u)

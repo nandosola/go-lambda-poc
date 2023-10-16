@@ -92,6 +92,15 @@ func TestErrorResponse(t *testing.T) {
       },
     },
     {
+      name: "DDBTimeout",
+      err: fmt.Errorf("DDBContext: canceled"),
+      expected: mockedResponse{
+        body: `{"message": "database error", "requestId": "12345-abcd"}`,
+        cType: "application/json",
+        status: 503,
+      },
+    },
+    {
       name: "UnexectedError",
       err: fmt.Errorf("BoomCrashBang: this is fine"),
       expected: mockedResponse{

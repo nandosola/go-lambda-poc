@@ -55,6 +55,10 @@ func ErrorResponse(err error, req *Request) (*Response, error) {
     status  = http.StatusBadRequest
     level   = warnLogLevel
 
+  case strings.HasPrefix(errMsg, "DDBContext"):
+    userMsg = "database error"
+    status  = http.StatusServiceUnavailable
+
   case strings.HasPrefix(errMsg, "DDB"):
     userMsg = "database error"
   }
