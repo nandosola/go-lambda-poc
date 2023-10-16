@@ -200,6 +200,10 @@ $ sam local invoke Greeter -e testdata/events-get.json`
 - [aws-sam-terraform-examples in Go](https://github.com/awsdocs//tree/main/gov2/lambda)
 - [aws-lambda-go-api-proxy](https://github.com/awslabs/aws-lambda-go-api-proxy)
 
+### Github Actions
+On all open PRs, unit tests and terraform linting/validation are executed.
+![GhActions](gh-actions.png)
+
 ### Monitoring
 #### Logs
 All logs are forwarded to CloudWatch:
