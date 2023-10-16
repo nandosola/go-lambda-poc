@@ -34,7 +34,7 @@ func storeContext() (context.Context, context.CancelFunc) {
 
 func createLocalClient() (*dynamodb.Client, error) {
 
-  cfg, err := config.LoadDefaultConfig(context.Background(),
+  cfg, err := config.LoadDefaultConfig(context.Background(),  //non-cancellable
               config.WithRegion("ddblocal"),
               config.WithEndpointResolver(aws.EndpointResolverFunc(
                 func(service, region string) (aws.Endpoint, error) {
