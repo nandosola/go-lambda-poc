@@ -38,10 +38,19 @@ func TestErrorResponse(t *testing.T) {
       },
     },
     {
-      name: "ValidationError",
+      name: "ValidationErrorRead",
       err: fmt.Errorf("ValidationError.Read: %w", errors.New("guru meditation")),
       expected: mockedResponse{
         body: `{"message": "username must be alphanumeric, min=2, max=12 chars", "requestId": "12345-abcd"}`,
+        cType: "application/json",
+        status: 400,
+      },
+    },
+    {
+      name: "ValidationErrorUpdate",
+      err: fmt.Errorf("ValidationError.Update: %w", errors.New("This is so wrong")),
+      expected: mockedResponse{
+        body: `{"message": "date must be yyyy-mm-dd", "requestId": "12345-abcd"}`,
         cType: "application/json",
         status: 400,
       },
@@ -53,6 +62,24 @@ func TestErrorResponse(t *testing.T) {
         body: `{"message": "username not found", "requestId": "12345-abcd"}`,
         cType: "application/json",
         status: 404,
+      },
+    },
+    {
+      name: "ServiceErrInvalidBirthday",
+      err: fmt.Errorf("TestBaz: %w", service.ErrInvalidBirthday),
+      expected: mockedResponse{
+        body: `{"message": "birth date must be before today", "requestId": "12345-abcd"}`,
+        cType: "application/json",
+        status: 400,
+      },
+    },
+    {
+      name: "JSONUnmarshal",
+      err: fmt.Errorf("JSONUnmarshal: %w", errors.New("I hate yaml")),
+      expected: mockedResponse{
+        body: `{"message": "bad json input", "requestId": "12345-abcd"}`,
+        cType: "application/json",
+        status: 400,
       },
     },
     {

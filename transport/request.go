@@ -22,12 +22,15 @@ const (
   updateReqRestrictions = "yyyy-mm-dd"
 
   yyyymmdd            = "2006-01-02"
+  dateRegex           = `\d{4}-\d{2}-\d{2}`
 )
 
 var (
   validate *validator.Validate
 
-  ErrPathParamNotFound = errors.New("missing path param")
+  ErrPathParamNotFound    = errors.New("missing path param")
+  ErrDateFormat           = errors.New("bad date format")
+  ErrRequiredFieldMissing = errors.New("missing required field")
 )
 
 func init() {
@@ -87,7 +90,7 @@ func (aur *AddOrUpdateBirthdayRequest) UnmarshalJSON(data []byte) error {
   }
 
   if aur.Dob == "" {
-   return errors.New("ValidationError.Update: 'dateOfBirth' is required",)
+   return fmt.Errorf("ValidationError.Update: %w", ErrRequiredFieldMissing)
   }
 
   bday, err := asDate(aur.Dob)
@@ -101,9 +104,9 @@ func (aur *AddOrUpdateBirthdayRequest) UnmarshalJSON(data []byte) error {
 }
 
 func asDate(str string) (time.Time, error){
-  re := regexp.MustCompile(`\d{4}-\d{2}-\d{2}`)
+  re := regexp.MustCompile(dateRegex)
   if !re.MatchString(str) {
-   return time.Time{}, errors.New("ValidationError.Update: bad date format")
+   return time.Time{}, fmt.Errorf("ValidationError.Update: %w", ErrDateFormat)
   }
 
   parsed, err := time.Parse(yyyymmdd, str)

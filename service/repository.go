@@ -99,6 +99,7 @@ func (brr bdayReadRepository) GetBirthday(ctx context.Context, user IUser) (*Bir
   return bday, err
 }
 
+// no need to test this
 func (bwr bdayWriteRepository) AddBirthday(ctx context.Context, bday *Birthday) error {
   return bwr.store.AddToStore(bday)
 }

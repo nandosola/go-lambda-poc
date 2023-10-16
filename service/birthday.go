@@ -36,6 +36,7 @@ func ResetClock() {
 }
 
 type Birthday struct {
+  // DynamoDB hash key (pk) should be random to guarantee better read distribution
   Id        string    `dynamodbav:"Id"   json:"-"`
   Dob       time.Time `dynamodbav:"Dob"  json:"-"`
   name      string
@@ -54,7 +55,6 @@ func (b *Birthday) WithDateOfBirth(dob time.Time) (*Birthday, error) {
 
   ty, tm, td := now.Date()
   by, bm, bd := dob.Date()
-
 
   if (ty == by && tm == bm && td == bd) || !dob.Before(now) {
    return nil, fmt.Errorf("Birthday: %w", ErrInvalidBirthday)

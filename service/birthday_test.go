@@ -2,6 +2,7 @@ package service
 
 import (
   "encoding/json"
+  "errors"
   "fmt"
   "testing"
   "time"
@@ -10,6 +11,52 @@ import (
 )
 
 const yyyymmdd = "2006-01-02"
+
+
+func TestBirthdayWithDateOfBirth(t *testing.T) {
+  defer ResetClock()
+  NowFun = func() time.Time {
+      return time.Date(2063, 04, 05, 13, 37, 42, 0, time.UTC)
+  }
+
+  cases := []struct {
+    name      string
+    user      string
+    birthDate string
+    ok        bool
+  }{
+    {
+      name: "SetInThePast",
+      user: "zefram",
+      birthDate: "2032-08-29",
+      ok: true,
+    },
+    {
+      name: "SetInTheFuture",
+      user: "jlpicard",
+      birthDate: "2305-07-13",
+      ok: false,
+    },
+    {
+      name: "SetToday",
+      user: "alice",
+      birthDate: "2063-04-05",
+      ok: false,
+    },
+  }
+
+  for _, tc := range cases {
+    t.Run(tc.name, func(t *testing.T) {
+      parsed, _ := time.Parse(yyyymmdd, tc.birthDate)
+      _, err := NewBirthday(tc.user).WithDateOfBirth(parsed)
+      if err != nil {
+        if tc.ok || !errors.Is(err, ErrInvalidBirthday) {
+          t.Errorf("%s: got unexpected error %s", tc.birthDate, err.Error())
+        }
+      }
+    })
+  }
+}
 
 func TestBirthdayDaysRemaining(t *testing.T) {
   defer ResetClock()
@@ -169,6 +216,7 @@ func TestBirthdayGreeting(t *testing.T) {
   }
 }
 
+// execute with 'go test -bench=.'
 func BenchmarkBirthdayDaysRemaining(b *testing.B) {
   defer ResetClock()
   NowFun = func() time.Time {
