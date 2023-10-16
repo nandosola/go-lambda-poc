@@ -44,8 +44,25 @@ The solution is fully deployable to AWS. To keep things simple and secure, I dec
 I've chosen DynamoDB as the go-to database for AWS Lambdas. However, there are some quirks:
 - There's a single primary key (aka hash key) on Id. DynamoDB hash keys should be optimized so they are distributed randomly across the ring nodes. This is the reason why I've chosen to SHA-256 the `{username}` attribute and use this random-ish string as our `BirthdayTable` PK.
 
+If needed, authorization (and other standard integrations) can be implemented in the API Gateway. No need to deal with access control in our lambdas.
+
 ### System diagram
 ![Diagram](system-diagram.png)
+
+#### Live API
+The virtual host is: `api-684b.playground-4fd1.net`. It's a domain I use for my internal stuff. There's no need to use the API Gateway public access at: `xxxxx.execute-api.eu-west-1.amazonaws.com`.
+
+
+```
+$ curl -H "Content-Type:application/json" -X PUT \
+       -d '{"dateOfBirth":"1978-06-18"}' \
+       https://api-684b.playground-4fd1.net/hello/nando
+
+$
+$ curl https://api-684b.playground-4fd1.net/hello/nando
+{"message":"Hello, nando! Your birthday is in 246 day(s)"}
+
+```
 
 ### serverless.tf
 As for the practical aspects, I've chosen [serverless.tf](https://serverless.tf/) to manage my lambdas:
