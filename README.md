@@ -210,6 +210,7 @@ awslogs get /aws/apigw/xxx-http --aws-region eu-west-1 --profile playground_iac 
 ```
 
 #### Metrics
+Atm only accessible via CloudWatch dashboards.
 - https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics.html
 - https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights.html
 
@@ -240,4 +241,16 @@ Error Set:
 Please use `./check-deployment.sh plot` for a fancier output:
 ![Report](vegeta-plot.png)
 To make some sense out of any potential downtime during `terraform apply`, we should inspect lambda insights throttling, warmup and parallelism events in Cloudwatch. For example, we could be getting "false deploy downtime" for a high request volume that is cut off by the lambda runtime.
+
+### Further improvements
+- Provide an OpenAPI template.
+- Handle throttling/timeouts in the code, via `eventContext`.
+  - https://aws.amazon.com/blogs/compute/error-handling-patterns-in-amazon-api-gateway-and-aws-lambda/
+- Export cloudwatch metrics & logs to dashboard (minisite or grafana)
+  - https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-dashboard-sharing.html
+  - https://grafana.com/docs/grafana/latest/datasources/aws-cloudwatch/
+  - https://aws.amazon.com/blogs/opensource/using-amazon-managed-service-for-grafana-to-troubleshoot-a-serverless-application/
+- Setup a deployment pipeline in Github
+- Provide remote dev env, via terraform workspace and dedicated VPC & IAM roles
+- Advance towards a more advanced deployment strategy (eg blue/green). I'd need to study serverless.tf more deeply.
 
