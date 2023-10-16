@@ -1,2 +1,6 @@
-PUT https://api-684b.playground-4fd1.net/hello/health
+PUT https://api-684b.playground-4fd1.net/hello/foo
+Content-Type: application/json
+@data.json
+
+GET https://api-684b.playground-4fd1.net/hello/foo
 
