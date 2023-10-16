@@ -220,7 +220,7 @@ serverless.tf is a pretty active project. Some of its features keep up a faster 
 #### zero-downtime deploys
 _For most cases_. AWS lambdas have zero-downtime deploys. Of course, this depends on usage characteristics of the system. Having said this, handling these kind of scenarios outgrows AWS free-tier capabilities (eg. [provisioned concurrency](https://aws.amazon.com/ru/blogs/compute/new-for-aws-lambda-predictable-start-up-times-with-provisioned-concurrency/)). To prevent additional costs, rolling deployments can be also achieved via AWS CodeDeploy with additional benefits (ie blue/green, canary, …). TBH I didn't have enough time to explore this alternative.  Additionally, IMO, before tackling this deployment/pipeline complexity, we could arguably consider increase Dynamodb read/rite provisioned capacity. Or even switch from x86 lambda workers to ARM ones.
 
-**tl/dr;** I'll consider the _pico-downtime deploys_ as just good enough. I've coded a small utility to be run while lambda functions are being redeployed. The concurrency can be tuned. Atm it's set to 5 rps for 60 secs. Again, pretty reasonable within our free-tier constraints.
+**tl/dr;** I'll consider the _potential-pico-downtime deploys_ as just good enough. I've coded a small utility to be run while lambda functions are being redeployed. The concurrency can be tuned. Atm it's set to 5 rps for 60 secs. Again, pretty reasonable within our free-tier constraints.
 
 ```
 $ cd scripts
