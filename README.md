@@ -81,7 +81,7 @@ As for the practical IaC implementation aspects, I've chosen [serverless.tf](htt
 ### Deployment (Terraform)
 All the infra is stored under the `deploy/` dir. New lambdas can be easily added just by editing `lambdas.tf` and `api_gateway.tf`. Please mind that the source code lives outside Terraform. Each lambda is mapped to a ZIP file under `dist/`. For a complete deployment, just type `make deploy`.
 
-**NB** Atm each time `make deploy` is invoked, all lambdas are redeployed regardless of changes. This is because the ZIP checksums are different across each `go build` run. It's pretty easy to fix though: eg add a condition in deploy only if the github commit has changed. See: [building-and-packaging](https://registry.terraform.io/modules/terraform-aws-modules/lambda/aws/latest#a-namebuild-packagea-how-does-building-and-packaging-work) at serverless.tf docs.
+**NB** Atm each time `make deploy` is invoked, all lambdas are redeployed regardless of changes. This is because the ZIP checksums are different across each `go build` run. It's pretty easy to fix though: eg add a condition in deploy only if the github commit has changed. See: [building-and-packaging](https://registry.terraform.io/modules/terraform-aws-modules/lambda/aws/latest#a-namebuild-packagea-how-does-building-and-packaging-work) at serverless.tf lambda docs.
 
 ### Development (Go)
 Golang is my favorite language atm. It's very expressive, easy to learn and productive. Why not create a way to develop lambdas in Go and then be able to deploy them? Well, here it is:
@@ -108,13 +108,13 @@ Golang is my favorite language atm. It's very expressive, easy to learn and prod
     └── (deal eith requests and responses)
 ```
 
-**NB** The structure might not seem very Go-like, but it's more understandable IMO. It can evolve towards a [modular monlith](https://leonardqmarcq.com/posts/go-project-structure-for-api-gateway-lambda-with-aws-sam).
+**NB** The structure might not seem very Go-like, but it's more understandable IMO. For more purity, it can evolve towards a [modular monlith](https://leonardqmarcq.com/posts/go-project-structure-for-api-gateway-lambda-with-aws-sam).
 
 #### Local env
 Each function has a Makefile with the following goals:
 - **build** fast-builds the project, with instant feedback.
-- **dist** generates cross-compiled binary (`bootstrap`) for containerized lambda testing
-- **run** spins up a local lambda server with a worker pointing to the `bootstrap` binary
+- **dist** generates cross-compiled binary (`bootstrap`) for containerized lambda testing.
+- **run** spins up a local HTTP gateway and a lambda worker pointing to the `bootstrap` binary.
 - **zip** generates package in `dist/` dir. It's called by the top-level Makefile to deploy everything. It can also be used before deploying with Terraform manually.
 
 #### Unit tests
@@ -126,7 +126,7 @@ The easiest way to run them all is via the top-level Makefile: `make test`.
 For completeness sake, I've added a simple benchmark for the most algorithmic path of the app: getting remaining days until next birthday. To run it kust `cd service; go test -bench=.`
 
 #### HTTP Integration testing
-There's a `docker-compose.yaml` file that wires up a `amazon/dynamodb-local`. It can be accessed externally via `http://localhost:8000` or as `http://dynamo:8000` inside `lambda-local` Docker network.
+For each function, there's a SAM `template.yaml` file describing a simple lambda and a gateway to access it via HTTP. There's also a `docker-compose.yaml` file that starts up an `amazon/dynamodb-local` container. It can be accessed externally via `http://localhost:8000` or as `http://dynamo:8000` inside `lambda-local` Docker network from `template.yml`.
 
 ##### Session A
 ```
