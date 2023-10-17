@@ -65,10 +65,6 @@ $ curl https://api-684b.playground-4fd1.net/hello/nando
 
 ```
 
-### Github Actions
-On all open PRs, unit tests and terraform linting/validation are executed.
-![GhActions](gh-actions.png)
-
 ### serverless.tf
 As for the practical implementation aspects, I've chosen [serverless.tf](https://serverless.tf/) to manage my lambdas:
 - 100% Terraform-friendly, unlike other alternatives that impose a programming framework for apps ([Chalice](https://aws.github.io/chalice/)) or compete with AWS ([Serverless](https://www.serverless.com/)).
@@ -247,6 +243,10 @@ $ awslogs get /aws/apigw/xxx-http --aws-region eu-west-1 --profile playground_ia
 Atm only accessible via CloudWatch dashboards.
 - https://docs.aws.amazon.com/lambda/latest/dg/monitoring-metrics.html
 - https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights.html
+
+### Github Actions
+On all open PRs, unit tests and terraform linting/validation are executed.
+![GhActions](gh-actions.png)
 
 ### Tradeoffs
 #### Local env based on SAM
