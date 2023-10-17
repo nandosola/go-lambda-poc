@@ -140,7 +140,7 @@ For each function, there's a SAM `template.yaml` file describing a simple lambda
 
 ##### Session A
 ```
-$ cd functions/put-lambda
+$ cd functions/put-birthday
 make run
 go clean
 rm -f main bootstrap
@@ -182,16 +182,28 @@ _(Exit with ^C)_
 ```
 $ curl -v -H "Content-Type:application/json" \
        -X PUT -d '{"dateOfBirth":"1989-01-09"}' \
-       https://api-684b.playground-4fd1.net/hello/foo
+       http://127.0.0.1:3000/hello/foo
 $
 $ aws dynamodb execute-statement --no-cli-pager --statement "SELECT * FROM Birthdays" --endpoint-url http://localhost:8000
-…
+
+{
+    "Items": [
+        {
+            "Dob": {
+                "S": "1989-01-09T00:00:00Z"
+            },
+            "Id": {
+                "S": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+            }
+        }
+    ]
+}
 ```
 
 #### Event integration testing
 The AWS SAM model allows developers to test resources defined in `template.yaml` with naked events:
 ```
-$ cd functions/get-lambda
+$ cd functions/get-birthday
 $ sam local invoke Greeter -e ../../testdata/events-get.json
 Invoking main (provided.al2)
 Local image is up-to-date
