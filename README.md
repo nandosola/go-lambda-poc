@@ -298,7 +298,7 @@ Error Set:
 
 Please use `./check-deployment.sh plot` for a fancier output:
 ![Report](vegeta-plot.png)
-To make some sense out of any potential downtime during `terraform apply`, we should inspect lambda insights throttling, warmup and parallelism metrics in Cloudwatch. For example, we could be getting "false deploy downtime" for a high request volume that is cut off by the lambda runtime.
+To make some sense out of any potential downtime during `terraform apply`, we should inspect lambda insights throttling, warmup and parallelism metrics in Cloudwatch. For example, we could be getting "false deploy downtime" for a high request volume that is cut off by a misconfigured lambda runtime.
 
 ### Further improvements
 - Provide an OpenAPI template.
