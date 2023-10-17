@@ -219,7 +219,7 @@ REPORT RequestId: b03c01db-8b48-44e0-a3af-643fafde5f08  Init Duration: 0.89 ms  
 ```
 _(Exit with ^C)_
 
-However, I didn't find this useful for HTTP events. OTOH this testing method is quite handy for functions consuming eg SQS/SNS/SES messsages. Or also events carrying AWS metadata (ie Cognito).
+However, I didn't find this useful for HTTP events. OTOH this testing method is quite handy for functions consuming ie SQS/SNS/SES messsages. Or also events carrying AWS metadata (ie Cognito).
 
 #### Learning resources
 - [Lambda handler in Go](https://docs.aws.amazon.com/lambda/latest/dg/golang-handler.html)
