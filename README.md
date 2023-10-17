@@ -259,7 +259,7 @@ $ awslogs get /aws/apigw/xxx-http --aws-region eu-west-1 --profile playground_ia
 
 ```
 
-**NB** I'm using the same API user across all this exercise. I should have created a cloudwatch-only profile.
+**NB** I'm using the same AWS API user across all this exercise. I should have created a cloudwatch-only profile.
 
 #### Metrics
 Atm only accessible via CloudWatch dashboards.
