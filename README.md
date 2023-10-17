@@ -39,7 +39,7 @@ API HTTP errors have the following structure:
 ```
 {
   "message": <error description for users>,
-  "requestId" <correlation id for logs>:
+  "requestId" <correlation id for logs>
 }
 ```
 For concrete examples, please read [errors_test.go](transport/errors_test.go).
