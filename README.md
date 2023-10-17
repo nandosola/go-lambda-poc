@@ -35,6 +35,16 @@ This is my proposed DevOps project for a simple birthday greeter REST app:
        {"message": "Hello, {user}! Happy birthday!"}
 ```
 
+API HTTP errors have the following structure:
+```
+{
+  "message": <error description for users>,
+  "requestId" <correlation id for logs>:
+}
+```
+For concrete examples, please read [errors_test.go](transport/errors_test.go).
+
+
 The solution is fully deployable to AWS. To keep things simple and secure, I decided to apply the Serverless philosophy:
 - The app is stateless.
 - Each endpoint can be easily mapped to a function.
@@ -280,11 +290,11 @@ To make some sense out of any potential downtime during `terraform apply`, we sh
 - Provide an OpenAPI template.
 - Handle throttling/timeouts in the code, via `eventContext`.
   - https://aws.amazon.com/blogs/compute/error-handling-patterns-in-amazon-api-gateway-and-aws-lambda/
-- Export cloudwatch metrics & logs to dashboard (minisite or grafana)
+- Export cloudwatch metrics to dashboards (minisite or grafana).
   - https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-dashboard-sharing.html
   - https://grafana.com/docs/grafana/latest/datasources/aws-cloudwatch/
   - https://aws.amazon.com/blogs/opensource/using-amazon-managed-service-for-grafana-to-troubleshoot-a-serverless-application/
-- Setup a deployment pipeline in Github
-- Provide remote dev env, via terraform workspace and dedicated VPC & IAM roles
+- Setup a deployment pipeline in Github,
+- Provide remote dev env, via terraform workspace and dedicated VPC & IAM roles.
 - Advance towards a more advanced deployment strategy (eg blue/green). I'd need to study serverless.tf more deeply.
 
