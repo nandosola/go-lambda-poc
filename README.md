@@ -54,7 +54,7 @@ The solution is fully deployable to AWS. To keep things simple and secure, I dec
 - NoOps is better DevOps.
 
 I've chosen DynamoDB, as it's the go-to database for AWS Lambdas. However, there are some quirks:
-- There's a single primary key (aka hash key) on Id. DynamoDB hash keys should be optimized so they are distributed randomly across the ring nodes. This is the reason why I've chosen to SHA-256 the `{username}` attribute and use this random-ish string as our `BirthdayTable` PK.
+- There's a single primary key (aka hash key) on `Id` (username). DynamoDB hash keys should be optimized so they are distributed randomly across the ring nodes. This is the reason why I've chosen to SHA-256 the `{username}` attribute and use this random-ish string as our `BirthdayTable` PK.
 - According to [Lambda documentation](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html), lambda environment is initialized once (cold start) and executed several times after that (warm execution). That means we can define and reuse database connections between invocations if we put the client outside our executive function.
 
 If needed, authorization (and other standard integrations) can be implemented in the API Gateway. There's no need to deal with access control in our lambdas.
