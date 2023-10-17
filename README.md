@@ -133,10 +133,12 @@ The easiest way to run them all is via the top-level Makefile: `make test`.
 **NB** I don't recommend testing the `main.go` files for non CLI apps. It's just a collection of simple calls with no associated logic.
 
 #### Benchmarks
-For completeness sake, I've added a simple benchmark for the most algorithmic path of the app: getting remaining days until next birthday. To run it kust `cd service; go test -bench=.`
+For completeness sake, I've added a simple benchmark for the most algorithmic path of the app: getting remaining days until next birthday. To run it, just `cd service; go test -bench=.`
 
 #### HTTP Integration testing
-For each function, there's a SAM `template.yaml` file describing a simple lambda and a gateway to access it via HTTP. There's also a `docker-compose.yaml` file that starts up an `amazon/dynamodb-local` container. It can be accessed externally via `http://localhost:8000` or as `http://dynamo:8000` inside `lambda-local` Docker network from `template.yml`.
+For each function, there's a SAM `template.yaml` file describing a simple lambda and a gateway to access it via HTTP. There's also a `docker-compose.yaml` file that starts up an `amazon/dynamodb-local` container. It can be accessed externally via `http://localhost:8000` or as `http://dynamo:8000` inside `lambda-local` Docker network, also used by `sam local` command.
+
+Sample test:
 
 ##### Session A
 ```
