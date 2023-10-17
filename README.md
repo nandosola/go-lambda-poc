@@ -66,7 +66,7 @@ $ curl https://api-684b.playground-4fd1.net/hello/nando
 ```
 
 ### serverless.tf
-As for the practical implementation aspects, I've chosen [serverless.tf](https://serverless.tf/) to manage my lambdas:
+As for the practical IaC implementation aspects, I've chosen [serverless.tf](https://serverless.tf/) to manage my lambdas:
 - 100% Terraform-friendly, unlike other alternatives that impose a programming framework for apps ([Chalice](https://aws.github.io/chalice/)) or compete with AWS ([Serverless](https://www.serverless.com/)).
   - [Lambda](https://registry.terraform.io/modules/terraform-aws-modules/lambda/aws) module and examples.
   - [API Gateway](https://registry.terraform.io/modules/terraform-aws-modules/apigateway-v2) module and examples.
