@@ -151,7 +151,7 @@ docker-compose --file ../../docker-compose.yaml up -d --remove-orphans dynamo
 [+] Building 0.0s (0/0)                                            docker:desktop-linux
 [+] Running 2/2
  ✔ Network lambda-local              Created                                       0.1s
- ✔ Container hello-revolut-dynamo-1  Started                                       0.1s
+ ✔ Container hello-poc-dynamo-1      Started                                       0.1s
 sleep 2
 aws dynamodb create-table --no-cli-pager --cli-input-json file://../../testdata/create-ddb-table.json --endpoint-url http://localhost:8000
 …
@@ -169,7 +169,7 @@ Invoking main (provided.al2)
 Local image is up-to-date
 Using local image: public.ecr.aws/lambda/provided:al2-rapid-x86_64.
 
-Mounting /Users/nando/d/playground/hello-revolut/functions/put-birthday as
+Mounting /Users/nando/d/playground/go-lambda-poc/functions/put-birthday as
 /var/task:ro,delegated, inside runtime container
 START RequestId: ab80d7d6-7b5a-4f77-87cc-032fdc244de2 Version: $LATEST
 END RequestId: ab80d7d6-7b5a-4f77-87cc-032fdc244de2
@@ -211,7 +211,7 @@ Invoking main (provided.al2)
 Local image is up-to-date
 Using local image: public.ecr.aws/lambda/provided:al2-rapid-x86_64.
 
-Mounting /Users/nando/d/playground/hello-revolut/functions/get-birthday as
+Mounting /Users/nando/d/playground/go-lambda-poc/functions/get-birthday as
 /var/task:ro,delegated, inside runtime container
 START RequestId: b03c01db-8b48-44e0-a3af-643fafde5f08 Version: $LATEST
 2023/10/17 03:39:33 INFO - status: 404, message: username not found, requestId: id=, error: GetBirthday: alice, username not found
