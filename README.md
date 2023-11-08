@@ -1,4 +1,4 @@
-## hello-revolut
+## go-lambda-PoC
 
 ### Prerequisites
 - GNU/Linux or MacOS X with Bash and Make tools installed.
